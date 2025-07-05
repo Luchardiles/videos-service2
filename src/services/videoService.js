@@ -2,6 +2,7 @@ const {catchGrpc} = require('../utils/catchGrpc');
 const AppError = require('../utils/appError');
 const Video = require('../models/videoModel');
 const { publishVideoCreatedPlaylist, publishVideoCreatedSocialInteractions, publishVideoDeleted, publishVideoUpdatedPlaylist } = require('../rabbitmq/producer');
+const { connectMongo, closeMongo } = require('../database/mongooseConfig');
 
 const UploadVideo = catchGrpc(async (call, callback) => {
     const { title, description, genre, requestorRole } = call.request;
@@ -11,11 +12,13 @@ const UploadVideo = catchGrpc(async (call, callback) => {
     if (!title || !description || !genre) {
         return callback(new AppError("Title, description, and genre are required", 400), null);
     }
+    await connectMongo();
     const video = await Video.create({
         title,
         description,
         genre
     });
+    await closeMongo();
     await publishVideoCreatedPlaylist(video);
     await publishVideoCreatedSocialInteractions(video._id, 0); // Initial likes set to 0
     callback(null, { status: 201, data: video });
@@ -23,7 +26,9 @@ const UploadVideo = catchGrpc(async (call, callback) => {
 
 const GetVideo = catchGrpc(async (call, callback) => {
     const { id } = call.request;
+    await connectMongo();
     const video = await Video.findById(id);
+    await closeMongo();
     if (!video) {
         return callback(new AppError("Video not found", 404), null);
     }
@@ -53,7 +58,9 @@ const UpdateVideo = catchGrpc(async (call, callback) => {
     if (!id) {
         return callback(new AppError("Video ID is required", 400), null);
     }
+    await connectMongo();
     const video = await Video.findByIdAndUpdate(id, { title, description, genre }, { new: true });
+    await closeMongo();
     if (!video) {
         return callback(new AppError("Video not found", 404), null);
     }
@@ -69,7 +76,9 @@ const DeleteVideo = catchGrpc(async (call, callback) => {
     if (requestorRole !== "Administrador") {
         return callback(new AppError("Permission denied", 403), null);
     }
+    await connectMongo();
     const video = await Video.findByIdAndUpdate(id, { deletedAt: new Date() }, { new: true });
+    await closeMongo();
     if (!video) {
         return callback(new AppError("Video not found", 404), null);
     }
@@ -86,10 +95,12 @@ const ListVideos = catchGrpc(async (call, callback) => {
     if (genre) {
         query.genre = { $regex: genre, $options: "i" };
     }
+    await connectMongo();
     const videos = await Video.find({ ...query, deletedAt: null })
         .skip((page - 1) * limit)
         .limit(limit)
         .sort({ createdAt: -1 });
+    await closeMongo();
     if (!videos.length) {
         return callback(new AppError("No videos found", 404), null);
     }
