@@ -1,0 +1,80 @@
+syntax = "proto3";
+
+package videos;
+
+message Video {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  int32 likes = 4;
+  string genre = 5;
+  string userId = 6;
+  string createdAt = 7;
+  string updatedAt = 8;
+}
+
+message CreateVideoRequest {
+  string title = 1;
+  string description = 2;
+  string genre = 3;
+  string requestorRole = 4;
+}
+
+message CreateVideoResponse {
+  int32 status = 1;
+  Video data = 2;
+}
+
+message GetVideoRequest { string id = 1; }
+
+message GetVideoDataResponse {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  int32 likes = 4;
+  string genre = 5;
+}
+
+message GetVideoResponse {
+  int32 status = 1;
+  GetVideoDataResponse data = 2;
+}
+
+message UpdateVideoRequest {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  string genre = 4;
+  int32 likes = 5;
+  string requestorRole = 6;
+}
+
+message UpdateVideoResponse {
+  int32 status = 1;
+  Video data = 2;
+}
+
+message DeleteVideoRequest {
+  string id = 1;
+  string requestorRole = 2;
+}
+
+message DeleteVideoResponse { int32 status = 1; }
+
+message ListVideosRequest {
+  string titleFilter = 1;
+  string genreFilter = 2;
+}
+
+message ListVideosResponse {
+  int32 status = 1;
+  repeated Video videos = 2;
+}
+
+service Videos {
+  rpc CreateVideo(CreateVideoRequest) returns (CreateVideoResponse);
+  rpc GetVideo(GetVideoRequest) returns (GetVideoResponse);
+  rpc UpdateVideo(UpdateVideoRequest) returns (UpdateVideoResponse);
+  rpc DeleteVideo(DeleteVideoRequest) returns (DeleteVideoResponse);
+  rpc ListVideos(ListVideosRequest) returns (ListVideosResponse);
+}
