@@ -19,13 +19,13 @@ Microservicio de videos para operaciones sobre los videos del sistema **Streamfl
 1. **Clonar el repositorio**
 
 ```bash
-git clone https://github.com/Luchardiles/videos-service
+git clone https://github.com/Luchardiles/videos-service2
 ```
 
 2. **Ingresar al directorio del proyecto**
 
 ```bash
-cd videos-service
+cd videos-service2
 ```
 
 3. **Instalar las dependencias**
